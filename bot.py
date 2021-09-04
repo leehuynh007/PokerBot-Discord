@@ -341,7 +341,7 @@ async def on_message(message):
         await message.channel.send('\n'.join(messages))
 
 
-#TOKEN = os.getenv("TOKEN")
+TOKEN = os.getenv("TOKEN")
 
 @client.event
 async def on_ready():
