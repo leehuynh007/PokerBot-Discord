@@ -253,7 +253,7 @@ def balance(game: Game, message: discord.Message) -> List[str]:
         dbcursor.execute("SELECT uid FROM players WHERE uid = %s", (uid,))
         userdata = dbcursor.fetchall()
         conn.close()
-        return [f"{message.author.name} has ${userdata}."]
+        return [f"{message.author.name} has ${userdata[1]}."]
 
 # Handles a player going all-in, returning an error message if the player
 # cannot go all-in for some reason. Returns the list of messages for the bot
