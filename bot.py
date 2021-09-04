@@ -237,8 +237,7 @@ def set_option(game: Game, message: discord.Message) -> List[str]:
         game.options[tokens[1]] = val
         return [f"The {tokens[1]} is now set to {tokens[2]}."]
     except ValueError:
-        return [f"{tokens[1]} must be set to an integer, and '{tokens[2]}'""
-                " is not a valid integer."]
+        return [f"{tokens[1]} must be set to an integer, and '{tokens[2]}' is not a valid integer."]
 
 # Returns a list of messages that the bot should say to tell the players of
 # the current chip standings.
@@ -253,7 +252,7 @@ def balance(game: Game, message: discord.Message) -> List[str]:
     else:
         userdata = dbcursor.fetchall()
         conn.close()
-        return [f"{player.user.name} has ${userdata[1]}."
+        return [f"{player.user.name} has ${userdata[1]}."]
 
 # Handles a player going all-in, returning an error message if the player
 # cannot go all-in for some reason. Returns the list of messages for the bot
