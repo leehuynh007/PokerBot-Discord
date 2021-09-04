@@ -251,7 +251,7 @@ def balance(game: Game, message: discord.Message) -> List[str]:
         return ["You have not registered yet!"]
     else:
         dbcursor.execute("SELECT uid FROM players WHERE uid = %s", (uid,))
-        userdata = dbcursor.fetchall()
+        userdata = dbcursor.fetchone()
         conn.close()
         return [f"{message.author.name} has ${userdata[1]}."]
 
