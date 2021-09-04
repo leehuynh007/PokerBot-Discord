@@ -1,4 +1,3 @@
-discord.py
 discord
 pillow
 psycopg2
