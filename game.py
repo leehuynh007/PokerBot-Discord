@@ -316,7 +316,7 @@ class Game:
         cardnames = []
         for x in range(5):
             print('debug: card processing...')
-            cardnames.append('card/' + str(self.shared_cards[x]) + '.png')
+            cardnames.append('Cards/' + str(self.shared_cards[x]) + '.png')
             print(cardnames[x])
         images = [Image.open(x) for x in cardnames]
         print(images)
@@ -430,7 +430,7 @@ class Game:
         for player in self.players:
 
             #Open card images
-            images = [Image.open(x) for x in ['card/' + str(player.cards[0]) + '.png', 'card/' + str(player.cards[1]) + '.png']]
+            images = [Image.open(x) for x in ['Cards/' + str(player.cards[0]) + '.png', 'card/' + str(player.cards[1]) + '.png']]
             widths, heights = zip(*(i.size for i in images))
 
             total_width = sum(widths)
