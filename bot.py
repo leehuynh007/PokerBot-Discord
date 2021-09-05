@@ -430,9 +430,11 @@ async def on_message(message):
             msg = await message.channel.send('\n'.join(messages))
         else:
             locates = find_card(messages)
+            print(locates)
             cards = []
             for i in range (3):
                 cards.append("Card/" + messages[locates[0]][locates[i+1]+1:locates[i+2]] + ".png")
+            print (cards)
             messages.pop(locates[0])
             await message.channel.send('\n'.join(messages))
 
@@ -452,7 +454,6 @@ async def on_message(message):
             bytes = BytesIO()
             new_im.save(bytes, format="PNG")
             bytes.seek(0)
-
             msg = await message.channel.send(file = discord.File(bytes, filename='new_im.png'))
 
         emoji = reaction(command)
