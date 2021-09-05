@@ -75,7 +75,7 @@ class Game:
     def add_player(self, user: discord.User) -> bool:
         # Connect to player database
         try:
-            conn = connect_db()
+            conn = psycopg2.connect(DB_URL)
             dbcursor = conn.cursor()
         except (Exception, psycopg2.Error) as error:
             print ("Can not connect to database. Error: ", error)
