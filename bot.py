@@ -310,10 +310,6 @@ commands: Dict[str, Command] = {
 }
 
 @client.event
-async def on_ready():
-    print("Poker bot ready!")
-
-@client.event
 async def on_message(message):
     # Ignore messages sent by the bot itself
     if message.author == client.user:
@@ -321,25 +317,30 @@ async def on_message(message):
     # Ignore empty messages
     if len(message.content.split()) == 0:
         return
+    # Ignore private messages
+    if message.channel.type == 'dm':
+        return
 
     command = message.content.split()[0]
-    if command[0] == '$':
+    if command[0] == '!':
         if command not in commands:
-            await message.channel.send(f"{message.content} is not a valid command. "
-                                 "Message $help to see the list of commands.")
+            await client.send_message(
+                message.channel, f"{message.content} is not a valid command. "
+                                 "Message !help to see the list of commands.")
             return
 
-        game = games.setdefault(message.channel, Game(message))
+        game = games.setdefault(message.channel, Game())
         messages = commands[command][1](game, message)
 
         # The messages to send to the channel and the messages to send to the
         # players individually must be done seperately, so we check the messages
         # to the channel to see if hands were just dealt, and if so, we tell the
         # players what their hands are.
-        if command == '$deal' and messages[0] == 'The hands have been dealt!':
+        if command == '!deal' and messages[0] == 'The hands have been dealt!':
             await game.tell_hands(client)
 
-        await message.channel.send('\n'.join(messages))
+        msg = await message.channel.send('\n'.join(messages))
+        await msg.add_reaction("😀")
 
 
 TOKEN = os.getenv("TOKEN")
@@ -347,6 +348,7 @@ TOKEN = os.getenv("TOKEN")
 @client.event
 async def on_ready():
     print(f"Logged in as {client.user.name}({client.user.id})")
+    print("Poker bot ready!")
 
 if __name__ == "__main__":
     client.run(TOKEN)
