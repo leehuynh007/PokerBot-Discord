@@ -270,7 +270,7 @@ class Game:
     # Advances to the next round of betting (or to the showdown), returning a
     # list messages to tell the players
     def next_round(self) -> List[str]:
-        messages: List[str] = ["-"]
+        messages: List[str] = []
         if self.state == GameState.HANDS_DEALT:
             messages.append("Dealing the flop:")
             self.shared_cards.append(self.cur_deck.draw())
@@ -287,8 +287,7 @@ class Game:
             self.state = GameState.RIVER_DEALT
         elif self.state == GameState.RIVER_DEALT:
             return self.showdown()
-        messages.append("-".join(str(card) for card in self.shared_cards))
-        messages.append("-")
+        messages.append("-" + "-".join(str(card) for card in self.shared_cards) + "-")
         print(messages)
         self.pot.next_round()
         self.turn_index = self.first_bettor
