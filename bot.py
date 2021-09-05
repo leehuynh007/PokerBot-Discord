@@ -7,6 +7,9 @@ import discord
 
 from game import Game, GAME_OPTIONS, GameState
 
+TOKEN = os.getenv("TOKEN")
+prefix = os.getenv("PREFIX")
+
 client = discord.Client()
 games: Dict[discord.TextChannel, Game] = {}
 
@@ -38,13 +41,13 @@ def new_game(game: Game, message: discord.Message) -> List[str]:
         game.add_player(message.author)
         game.state = GameState.WAITING
         return [f"A new game has been started by {message.author.name}!",
-                "Message !join to join the game."]
+                f"Message {prefix} join to join the game."]
     else:
         messages = ["There is already a game in progress, "
                     "you can't start a new game."]
         if game.state == GameState.WAITING:
-            messages.append("It still hasn't started yet, so you can still "
-                            "message !join to join that game.")
+            messages.append(f"It still hasn't started yet, so you can still "
+                            f"message {prefix}join to join that game.")
         return messages
 
 # Has a user try to join a game about to begin, giving an error if they've
@@ -53,14 +56,14 @@ def new_game(game: Game, message: discord.Message) -> List[str]:
 def join_game(game: Game, message: discord.Message) -> List[str]:
     if game.state == GameState.NO_GAME:
         return ["No game has been started yet for you to join.",
-                "Message !newgame to start a new game."]
+                f"Message {prefix}newgame to start a new game."]
     elif game.state != GameState.WAITING:
         return [f"The game is already in progress, {message.author.name}.",
                 "You're not allowed to join right now."]
     elif game.add_player(message.author):
         return [f"{message.author.name} has joined the game!",
-                "Message !join to join the game, "
-                "or !start to start the game."]
+                f"Message {prefix}join to join the game, "
+                f"or {prefix}start to start the game."]
     else:
         return [f"You've already joined the game {message.author.name}!"]
 
@@ -68,13 +71,13 @@ def join_game(game: Game, message: discord.Message) -> List[str]:
 # players joined to play. Returns the messages the bot should say.
 def start_game(game: Game, message: discord.Message) -> List[str]:
     if game.state == GameState.NO_GAME:
-        return ["Message !newgame if you would like to start a new game."]
+        return [f"Message {prefix}newgame if you would like to start a new game."]
     elif game.state != GameState.WAITING:
         return [f"The game has already started, {message.author.name}.",
                 "It can't be started twice."]
     elif not game.is_player(message.author):
         return [f"You are not a part of that game yet, {message.author.name}.",
-                "Please message !join if you are interested in playing."]
+                f"Please message {prefix}join if you are interested in playing."]
     elif len(game.players) < 0:
         return ["The game must have at least two players before "
                 "it can be started."]
@@ -87,14 +90,14 @@ def start_game(game: Game, message: discord.Message) -> List[str]:
 def deal_hand(game: Game, message: discord.Message) -> List[str]:
     if game.state == GameState.NO_GAME:
         return ["No game has been started for you to deal. "
-                "Message !newgame to start one."]
+                f"Message {prefix}newgame to start one."]
     elif game.state == GameState.WAITING:
         return ["You can't deal because the game hasn't started yet."]
     elif game.state != GameState.NO_HANDS:
         return ["The cards have already been dealt."]
     elif game.dealer.user != message.author:
         return [f"You aren't the dealer, {message.author.name}.",
-                f"Please wait for {game.dealer.user.name} to !deal."]
+                f"Please wait for {game.dealer.user.name} to {prefix}deal."]
     else:
         return game.deal_hands()
 
@@ -122,7 +125,7 @@ def call_bet(game: Game, message: discord.Message) -> List[str]:
 # Returns the list of messages the bot should say.
 def check(game: Game, message: discord.Message) -> List[str]:
     if game.state == GameState.NO_GAME:
-        return ["No game has been started yet. Message !newgame to start one."]
+        return [f"No game has been started yet. Message {prefix}newgame to start one."]
     elif game.state == GameState.WAITING:
         return ["You can't check because the game hasn't started yet."]
     elif not game.is_player(message.author):
@@ -158,7 +161,7 @@ def raise_bet(game: Game, message: discord.Message) -> List[str]:
 
     tokens = message.content.split()
     if len(tokens) < 2:
-        return [f"Please follow !raise with the amount that you would "
+        return [f"Please follow {prefix}raise with the amount that you would "
                 "like to raise it by."]
     try:
         amount = int(tokens[1])
@@ -171,7 +174,7 @@ def raise_bet(game: Game, message: discord.Message) -> List[str]:
                     f"${game.current_player.max_bet - game.cur_bet}."]
         return game.raise_bet(amount)
     except ValueError:
-        return ["Please follow !raise with an integer. "
+        return [f"Please follow {prefix}raise with an integer. "
                 f"'{tokens[1]}' is not an integer."]
 
 # Has a player fold their hand, giving an error message if they cannot fold
@@ -179,7 +182,7 @@ def raise_bet(game: Game, message: discord.Message) -> List[str]:
 def fold_hand(game: Game, message: discord.Message) -> List[str]:
     if game.state == GameState.NO_GAME:
         return ["No game has been started yet. "
-                "Message !newgame to start one."]
+                f"Message {prefix}newgame to start one."]
     elif game.state == GameState.WAITING:
         return ["You can't fold yet because the game hasn't started yet."]
     elif not game.is_player(message.author):
@@ -200,7 +203,7 @@ def show_help(game: Game, message: discord.Message) -> List[str]:
     help_lines = []
     for command, info in sorted(commands.items()):
         spacing = ' ' * (longest_command - len(command) + 2)
-        help_lines.append(command + spacing + info[0])
+        help_lines.append(prefix + command + spacing + info[0])
     return ['```' + '\n'.join(help_lines) + '```']
 
 # Returns a list of messages that the bot should say in order to tell the
@@ -255,6 +258,37 @@ def balance(game: Game, message: discord.Message) -> List[str]:
         conn.close()
         return [f"{message.author.name} has ${userdata[1]}."]
 
+def balance_from(user: discord.User) -> List[str]:
+    conn = connect_db()
+    dbcursor = conn.cursor()
+    uid = str(user.id)
+    dbcursor.execute("SELECT uid FROM players WHERE uid = %s", (uid,))
+    if (dbcursor.fetchone() is None):
+        conn.close()
+        return ["You have not registered yet!"]
+    else:
+        dbcursor.execute("SELECT * FROM players WHERE uid = %s", (uid,))
+        userdata = dbcursor.fetchone()
+        conn.close()
+        return f"{user.name} has ${userdata[1]}."
+
+def info_from(user: discord.User) -> List[str]:
+    conn = connect_db()
+    dbcursor = conn.cursor()
+    uid = str(user.id)
+    dbcursor.execute("SELECT uid FROM players WHERE uid = %s", (uid,))
+    if (dbcursor.fetchone() is None):
+        conn.close()
+        return ["You have not registered yet!"]
+    else:
+        dbcursor.execute("SELECT * FROM players WHERE uid = %s", (uid,))
+        userdata = dbcursor.fetchone()
+        conn.close()
+        return [f"{user.name} infomation:",
+                f"Level: {userdata[3]}",
+                f"Current experience: {userdata[2]}xp", 
+                f"Win matches: {userdata[4]}"]
+
 # Handles a player going all-in, returning an error message if the player
 # cannot go all-in for some reason. Returns the list of messages for the bot
 # to say.
@@ -275,43 +309,75 @@ def all_in(game: Game, message: discord.Message) -> List[str]:
     else:
         return game.all_in()
 
+def call_dealer(game: Game, message: discord.Message) -> List[str]:
+    return ["What do you wanna do?"]
+
 Command = namedtuple("Command", ["description", "action"])
 
 # The commands avaliable to the players
 commands: Dict[str, Command] = {
-    '$newgame': Command('Starts a new game, allowing players to join.',
+    'newgame': Command('Starts a new game, allowing players to join.',
                         new_game),
-    '$join':    Command('Lets you join a game that is about to begin',
+    'join':    Command('Lets you join a game that is about to begin',
                         join_game),
-    '$start':   Command('Begins a game after all players have joined',
+    'start':   Command('Begins a game after all players have joined',
                         start_game),
-    '$deal':    Command('Deals the hole cards to all the players',
+    'deal':    Command('Deals the hole cards to all the players',
                         deal_hand),
-    '$call':    Command('Matches the current bet',
+    'call':    Command('Matches the current bet',
                         call_bet),
-    '$raise':   Command('Increase the size of current bet',
+    'raise':   Command('Increase the size of current bet',
                         raise_bet),
-    '$check':   Command('Bet no money',
+    'check':   Command('Bet no money',
                         check),
-    '$fold':    Command('Discard your hand and forfeit the pot',
+    'fold':    Command('Discard your hand and forfeit the pot',
                         fold_hand),
-    '$help':    Command('Show the list of commands',
+    'help':    Command('Show the list of commands',
                         show_help),
-    '$options': Command('Show the list of options and their current values',
+    'options': Command('Show the list of options and their current values',
                         show_options),
-    '$set':     Command('Set the value of an option',
+    'set':     Command('Set the value of an option',
                         set_option),
-    '$balance':   Command('Shows how many chips each player has left',
+    'balance':   Command('Shows how many chips each player has left',
                         balance),
-    '$all-in':  Command('Bets the entirety of your remaining chips',
+    'all-in':  Command('Bets the entirety of your remaining chips',
                         all_in),
-    '$reg':     Command('Register player in database',
+    'reg':     Command('Register player in database',
                         register),
+    'dealer':  Command("what do you wanna do?", 
+                        call_dealer),
 }
+
+def reaction(i)->List[str]:
+    emoji = {
+        "dealer" : ["\U000027A1",
+                    "\U0001F4B5",
+                    "\U00002139"],
+        
+    }
+    return emoji.get(i, "")
 
 @client.event
 async def on_ready():
     print("Poker bot ready!")
+
+@client.event
+async def on_reaction_add(reaction, user):
+    emoji = reaction.emoji
+
+    if user.bot:
+        return
+
+    if emoji == "\U0001F4B5":
+        messages = balance_from(user)
+        await reaction.message.channel.send(messages)
+    elif emoji == "\U00002139":
+        messages = info_from(user)
+        await reaction.message.channel.send('\n'.join(messages))
+    elif emoji == "emoji 3":
+        return
+    else:
+        return
 
 @client.event
 async def on_message(message):
@@ -321,12 +387,20 @@ async def on_message(message):
     # Ignore empty messages
     if len(message.content.split()) == 0:
         return
+    # Ignore private messages
+    if message.channel.type == "dm":
+        print ("DM Channel")
+        return
 
     command = message.content.split()[0]
-    if command[0] == '$':
+    print(command)
+    print(command[0])
+    print(command.removeprefix(prefix))
+    if command[0] == prefix:
+        command = command.removeprefix(prefix)
         if command not in commands:
             await message.channel.send(f"{message.content} is not a valid command. "
-                                 "Message $help to see the list of commands.")
+                                       f"Message {prefix}help to see the list of commands.")
             return
 
         game = games.setdefault(message.channel, Game(message))
@@ -336,16 +410,20 @@ async def on_message(message):
         # players individually must be done seperately, so we check the messages
         # to the channel to see if hands were just dealt, and if so, we tell the
         # players what their hands are.
-        if command == '$deal' and messages[0] == 'The hands have been dealt!':
+        if command == 'deal' and messages[0] == 'The hands have been dealt!':
             await game.tell_hands(client)
 
-        await message.channel.send('\n'.join(messages))
-
-
-TOKEN = os.getenv("TOKEN")
+        msg = await message.channel.send('\n'.join(messages))
+        emoji = reaction(command)
+        if (emoji != ""):
+            for emo in emoji:
+                await msg.add_reaction(emo)
+        
+        
 
 @client.event
 async def on_ready():
+    print("Bot is ready!")
     print(f"Logged in as {client.user.name}({client.user.id})")
 
 if __name__ == "__main__":
