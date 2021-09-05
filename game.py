@@ -85,7 +85,7 @@ class Game:
 
         #SQL processing get user data from database
         sql_query = "SELECT * FROM players WHERE uid = %s"
-        dbcursor.execute(sql_query, [user.id])
+        dbcursor.execute(sql_query, (str(user.id),))
         userdata = dbcursor.fetchone()
 
         #Set user data from database
