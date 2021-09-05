@@ -87,14 +87,14 @@ class Game:
         sql_query = "SELECT * FROM players WHERE uid = %s"
         dbcursor.execute(sql_query, (str(user.id),))
         userdata = dbcursor.fetchone()
+        conn.close()
 
         #Set user data from database
         newplayer = Player(user)
-        for row in userdata:
-            newplayer.balance = row[1]
-            newplayer.exp = row[2]
-            newplayer.level = row[3]
-            newplayer.wincount = row[4]
+        newplayer.balance = userdata[1]
+        newplayer.exp = userdata[2]
+        newplayer.level = userdata[3]
+        newplayer.wincount = userdata[4]
 
         self.players.append(newplayer)
         return True
