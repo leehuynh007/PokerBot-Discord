@@ -1,8 +1,10 @@
+from PIL import Image
+from io import BytesIO
 from collections import namedtuple
-import psycopg2
-import os
 from typing import Dict, List
 
+import psycopg2
+import os
 import discord
 
 from game import Game, GAME_OPTIONS, GameState
@@ -312,6 +314,17 @@ def all_in(game: Game, message: discord.Message) -> List[str]:
 def call_dealer(game: Game, message: discord.Message) -> List[str]:
     return ["What do you wanna do?"]
 
+def find_card(messages)->List[str]:
+    locates = []
+    for index, message in enumerate(messages):
+        i = message.find('-')
+        if (i != -1):
+            locates.append(index)
+            while i != -1:
+                locates.append(i)
+                i = message.find('-', i+1)
+    return locates
+
 Command = namedtuple("Command", ["description", "action"])
 
 # The commands avaliable to the players
@@ -413,7 +426,35 @@ async def on_message(message):
         if command == 'deal' and messages[0] == 'The hands have been dealt!':
             await game.tell_hands(client)
 
-        msg = await message.channel.send('\n'.join(messages))
+        if (find_card(messages) == []):
+            msg = await message.channel.send('\n'.join(messages))
+        else:
+            locates = find_card(messages)
+            cards = []
+            for i in range (3):
+                cards.append("Card/" + messages[locates[0]][locates[i+1]+1:locates[i+2]] + ".png")
+            messages.pop(locates[0])
+            await message.channel.send
+
+             #Open card images
+            images = [Image.open(x) for x in cards]
+            widths, heights = zip(*(i.size for i in images))
+
+            total_width = sum(widths)
+            max_height = max(heights)
+            #Create new image to send
+            new_im = Image.new('RGB', (total_width, max_height))
+            x_offset = 0
+            for im in images:
+              new_im.paste(im, (x_offset,0))
+              x_offset += im.size[0]
+
+            bytes = BytesIO()
+            new_im.save(bytes, format="PNG")
+            bytes.seek(0)
+
+            msg = await message.channel.send(file = discord.File(bytes, filename='new_im.png'))
+
         emoji = reaction(command)
         if (emoji != ""):
             for emo in emoji:
