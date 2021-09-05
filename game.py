@@ -287,7 +287,8 @@ class Game:
             self.state = GameState.RIVER_DEALT
         elif self.state == GameState.RIVER_DEALT:
             return self.showdown()
-        messages.append("  ".join(str(card) for card in self.shared_cards))
+        messages.append("-".join(str(card) for card in self.shared_cards))
+        print(messages)
         self.pot.next_round()
         self.turn_index = self.first_bettor
         return messages + self.cur_options()
