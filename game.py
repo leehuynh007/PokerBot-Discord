@@ -14,6 +14,7 @@ from poker import best_possible_hand, Card, Deck
 from pot import PotManager
 
 Option = namedtuple("Option", ["description", "default"])
+DB_URL = os.getenv("DATABASE_URL")
 
 GAME_OPTIONS: Dict[str, Option] = {
     "blind":  Option("The current price of the small blind", 5),
@@ -74,8 +75,7 @@ class Game:
     def add_player(self, user: discord.User) -> bool:
         # Connect to player database
         try:
-            DB_URL = os.getenv("DATABASE_URL")
-            conn = psycopg2.connect(DB_URL)
+            conn = connect_db()
             dbcursor = conn.cursor()
         except (Exception, psycopg2.Error) as error:
             print ("Can not connect to database. Error: ", error)
@@ -84,9 +84,9 @@ class Game:
             return False
 
         #SQL processing get user data from database
-        sql_query = "select * from players where uid = %s"
+        sql_query = "SELECT * FROM players WHERE uid = %s"
         dbcursor.execute(sql_query, (user.id,))
-        userdata = dbcursor.fetchall()
+        userdata = dbcursor.fetchone()
 
         #Set user data from database
         newplayer = Player(user)
