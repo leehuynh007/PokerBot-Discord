@@ -89,6 +89,7 @@ class Game:
             conn.close()
             return False
         else:
+            dbcursor.execute(sql_query, (str(user.id),))
             userdata = dbcursor.fetchone()
             conn.close()
              #Set user data from database
