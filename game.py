@@ -18,7 +18,6 @@ DB_URL = os.getenv("DATABASE_URL")
 
 GAME_OPTIONS: Dict[str, Option] = {
     "blind":  Option("The current price of the small blind", 5),
-    "buy-in": Option("The amount of money all players start out with", 500),
     "raise-delay": Option("The number of minutes before blinds double",  30),
     "starting-blind": Option("The starting price of the small blind", 5)
 }
@@ -86,17 +85,20 @@ class Game:
         #SQL processing get user data from database
         sql_query = "SELECT * FROM players WHERE uid = %s"
         dbcursor.execute(sql_query, (str(user.id),))
-        userdata = dbcursor.fetchone()
-        conn.close()
+        if (dbcursor.fetchone() is None):
+            conn.close()
+            return False
+        else:
+            userdata = dbcursor.fetchone()
+            conn.close()
+             #Set user data from database
+            newplayer = Player(user)
+            newplayer.balance = userdata[1]
+            newplayer.exp = userdata[2]
+            newplayer.level = userdata[3]
+            newplayer.wincount = userdata[4]
+            self.players.append(newplayer)
 
-        #Set user data from database
-        newplayer = Player(user)
-        newplayer.balance = userdata[1]
-        newplayer.exp = userdata[2]
-        newplayer.level = userdata[3]
-        newplayer.wincount = userdata[4]
-
-        self.players.append(newplayer)
         return True
 
     # Returns whether a user is playing in the game
@@ -159,9 +161,6 @@ class Game:
     def start(self) -> List[str]:
         self.state = GameState.NO_HANDS
         self.dealer_index = 0
-        for player in self.players:
-            player.balance = self.options["buy-in"]
-        # Reset the blind to be the starting blind value
         self.options["blind"] = self.options["starting-blind"]
         return ["The game has begun!"] + self.status_between_rounds()
 
