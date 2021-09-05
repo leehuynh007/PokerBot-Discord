@@ -358,6 +358,7 @@ def reaction(i)->List[str]:
     return emoji.get(i, "")
 
 @client.event
+<<<<<<< HEAD
 async def on_ready():
     print("Poker bot ready!")
 
@@ -380,6 +381,8 @@ async def on_reaction_add(reaction, user):
         return
 
 @client.event
+=======
+>>>>>>> 9cdecf2568bc8ca8a05cd980e356a81da097a11d
 async def on_message(message):
     # Ignore messages sent by the bot itself
     if message.author == client.user:
@@ -388,6 +391,7 @@ async def on_message(message):
     if len(message.content.split()) == 0:
         return
     # Ignore private messages
+<<<<<<< HEAD
     if message.channel.type == "dm":
         print ("DM Channel")
         return
@@ -401,15 +405,27 @@ async def on_message(message):
         if command not in commands:
             await message.channel.send(f"{message.content} is not a valid command. "
                                        f"Message {prefix}help to see the list of commands.")
+=======
+    if message.channel.type == 'dm':
+        return
+
+    command = message.content.split()[0]
+    if command[0] == '!':
+        if command not in commands:
+            await client.send_message(
+                message.channel, f"{message.content} is not a valid command. "
+                                 "Message !help to see the list of commands.")
+>>>>>>> 9cdecf2568bc8ca8a05cd980e356a81da097a11d
             return
 
-        game = games.setdefault(message.channel, Game(message))
+        game = games.setdefault(message.channel, Game())
         messages = commands[command][1](game, message)
 
         # The messages to send to the channel and the messages to send to the
         # players individually must be done seperately, so we check the messages
         # to the channel to see if hands were just dealt, and if so, we tell the
         # players what their hands are.
+<<<<<<< HEAD
         if command == 'deal' and messages[0] == 'The hands have been dealt!':
             await game.tell_hands(client)
 
@@ -420,11 +436,22 @@ async def on_message(message):
                 await msg.add_reaction(emo)
         
         
+=======
+        if command == '!deal' and messages[0] == 'The hands have been dealt!':
+            await game.tell_hands(client)
+
+        msg = await message.channel.send('\n'.join(messages))
+        await msg.add_reaction("😀")
+
+
+TOKEN = os.getenv("TOKEN")
+>>>>>>> 9cdecf2568bc8ca8a05cd980e356a81da097a11d
 
 @client.event
 async def on_ready():
     print("Bot is ready!")
     print(f"Logged in as {client.user.name}({client.user.id})")
+    print("Poker bot ready!")
 
 if __name__ == "__main__":
     client.run(TOKEN)
