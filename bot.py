@@ -434,7 +434,7 @@ async def on_message(message):
             for i in range (3):
                 cards.append("Card/" + messages[locates[0]][locates[i+1]+1:locates[i+2]] + ".png")
             messages.pop(locates[0])
-            await message.channel.send
+            await message.channel.send('\n'.join(messages))
 
              #Open card images
             images = [Image.open(x) for x in cards]
