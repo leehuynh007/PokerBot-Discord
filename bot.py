@@ -443,7 +443,7 @@ async def on_message(message):
             locates = find_card(messages)
             print(locates)
             cards = []
-            for i in range (locates.len()-1):
+            for i in range (len(locates)-1):
                 cards.append("Cards/" + messages[locates[0]][locates[i+1]+1:locates[i+2]] + ".png")
             print (cards)
             messages.pop(locates[0])
