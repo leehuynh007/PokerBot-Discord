@@ -43,7 +43,7 @@ def new_game(game: Game, message: discord.Message) -> List[str]:
         game.add_player(message.author)
         game.state = GameState.WAITING
         return [f"A new game has been started by {message.author.name}!",
-                f"Message {prefix} join to join the game."]
+                f"Message {prefix}join to join the game."]
     else:
         messages = ["There is already a game in progress, "
                     "you can't start a new game."]
@@ -55,7 +55,7 @@ def new_game(game: Game, message: discord.Message) -> List[str]:
 def stop_game(game: Game, message: discord.Message) -> List[str]:
     if game.state != GameState.NO_GAME:
         game.state = GameState.NO_GAME
-        return [f"Game has been stoped by {message.author.name}!"]
+        return [f"Game has been stopped by {message.author.name}!"]
                 
     else:
         messages = ["There is no game in progress!"]
