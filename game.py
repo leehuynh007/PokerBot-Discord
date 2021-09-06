@@ -430,7 +430,7 @@ class Game:
         for player in self.players:
 
             #Open card images
-            images = [Image.open(x) for x in ['Cards/' + str(player.cards[0]) + '.png', 'card/' + str(player.cards[1]) + '.png']]
+            images = [Image.open(x) for x in ['Cards/' + str(player.cards[0]) + '.png', 'Cards/' + str(player.cards[1]) + '.png']]
             widths, heights = zip(*(i.size for i in images))
 
             total_width = sum(widths)
