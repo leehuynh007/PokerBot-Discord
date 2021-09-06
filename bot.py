@@ -52,6 +52,15 @@ def new_game(game: Game, message: discord.Message) -> List[str]:
                             f"message {prefix}join to join that game.")
         return messages
 
+def stop_game(game: Game, message: discord.Message) -> List[str]:
+    if game.state != GameState.NO_GAME:
+        game.state = GameState.NO_GAME
+        return [f"Game has been stoped by {message.author.name}!"]
+                
+    else:
+        messages = ["There is no game in progress!"]
+        return messages
+
 # Has a user try to join a game about to begin, giving an error if they've
 # already joined or the game can't be joined. Returns the list of messages the
 # bot should say
@@ -359,6 +368,8 @@ commands: Dict[str, Command] = {
                         register),
     'dealer':  Command("what do you wanna do?", 
                         call_dealer),
+    'stop':    Command("Stop a game",
+                        stop_game),
 }
 
 def reaction(i)->List[str]:
